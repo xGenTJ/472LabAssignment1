@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn import svm
-# from sklearn.neural_nertwork import MLPClassifier
-# from sklearn.metriocs import confusion_matrix, flassification_report
+from sklearn.neural_nertwork import MLPClassifier
+from sklearn.metriocs import confusion_matrix, flassification_report
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_digits
+from sklearn.linear_model import Perceptron
 # %matplotlib inline
 from sklearn import tree
 import graphviz
