@@ -4,6 +4,7 @@ import matplotlib as matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn import svm
 # from sklearn.neural_nertwork import MLPClassifier
@@ -24,7 +25,10 @@ def readCSV():
     alphabetData = pd.read_csv('dataset/train_1.csv', header=None)
     greekAlphabetData = pd.read_csv('dataset/train_2.csv', header=None)
 
-    return info1, info2, alphabetData, greekAlphabetData
+    alphabetDataTestLabel = pd.read_csv('dataset/test_with_label_1.csv', header=None)
+    greekAlphabetDataTestLabel = pd.read_csv('dataset/test_with_label_2.csv', header=None)
+
+    return info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel
 
 
 def plotAlphabet(lastColumn):
@@ -49,7 +53,7 @@ def naimursMassage(alphabetData, alphabetLastColumn, lastColIndex=1024):
     X = alphabetData.drop(alphabetData.columns[lastColIndex], axis=1)
     Y = alphabetLastColumn
 
-    return train_test_split(X, Y, test_size=0.2, random_state=42)
+    return X,Y
 
 
 def calculateConfusionMatrix(yTest, prediction):
@@ -85,16 +89,57 @@ def baselineDecisionTree(xTrain, xTest, yTrain, yTest, model):
     # print(cr)
     exportToCSV(model, cfm, cr)
 
+def baseMLP(xTrain, xTest, yTrain, yTest, model):
+    # a baseline Multi-Layered Perceptron with 1 hidden layer of 100 neurons, sigmoid/logistic as activation function,
+    # stochastic gradient descent, and default values for the rest of the parameters.
+    
+    base_MLP = MLPClassifier(hidden_layer_sizes=(100,), activation = 'logistic', solver = 'sgd')          # construct MLP Classifier with parameters
+    base_MLP = base_MLP.fit(xTrain, yTrain)                                                          # train the algorithm with training datasets
+    base_MLP_prediction = base_MLP.predict(xTest)                                                    # make predictions on our test dataset
+
+    cfm = calculateConfusionMatrix(yTest, base_MLP_prediction)
+    cr = calculateClassificationReport(yTest, base_MLP_prediction)
+    print(cfm)
+    print(cr)
+    i = 0
+    for x in base_MLP_prediction:
+        print(i, " ", x)
+        i += 1
+    exportToCSV(model, cfm, cr)
+
+def bestMLP(xTrain, xTest, yTrain, yTest, model):
+    # a better performing Multi-Layered Perceptron found by performing grid search to find the
+    # best combination of hyper-parameters.
+
+    # For this, you need to experiment with the following parameter values:
+        #  • activation function: sigmoid, tanh, relu and identity
+        #  • 2 network architectures of your choice: for eg 2 hidden layers with 30+50 nodes, 3 hidden layers with 10+10
+        #  • solver: Adam and stochastic gradient descent
+
+    base_MLP = MLPClassifier(hidden_layer_sizes=(10, 10, 10), activation = 'logistic', solver = 'sgd')          # construct MLP Classifier with parameters
+    base_MLP = base_MLP.fit(xTrain, yTrain)                                                          # train the algorithm with training datasets
+    base_MLP_prediction = base_MLP.predict(xTest)                                                    # make predictions on our test dataset
+
+    cfm = calculateConfusionMatrix(yTest, base_MLP_prediction)
+    cr = calculateClassificationReport(yTest, base_MLP_prediction)
+    print(cfm)
+    print(cr)
+    exportToCSV(model, cfm, cr)
 
 class Main:
-    info1, info2, alphabetData, greekAlphabetData = readCSV()
+    info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel = readCSV()
 
     lastColumn = getReplacedLastColumn(info2, greekAlphabetData)
-
+    lastColumnTest = getReplacedLastColumn(info2, greekAlphabetDataTestLabel)
     # plotAlphabet(lastColumn)
 
-    xTrain, xTest, yTrain, yTest = naimursMassage(greekAlphabetData, lastColumn)
+    xTrain, yTrain = naimursMassage(greekAlphabetData, lastColumn)
+    xTest, yTest = naimursMassage(greekAlphabetDataTestLabel, lastColumnTest)
 
-    print(xTest)
 
-    baselineDecisionTree(xTrain, xTest, yTrain, yTest, 'Base-DT-DS2')
+    # print(xTest)
+
+    # baselineDecisionTree(xTrain, xTest, yTrain, yTest, 'Base-DT-DS2')
+
+    baseMLP(xTrain, xTest, yTrain, yTest, 'Base-MLP-DS2')
+    # bestMLP(xTrain, xTest, yTrain, yTest, 'Best-MLP-DS2')
