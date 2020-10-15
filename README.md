@@ -32,9 +32,11 @@ EVERYONE:
 	naimursMassage()
 	exportToCSV()		- final
 	main
+	instancePredictedClass()
+	getReversedDic()
 	
 TAO:
-
+	classifyPerceptron()
 
 
 
@@ -47,3 +49,5 @@ PRISCILLA:
 	betterPerformingDecisionTree()
 
 NAIMUR:
+	baseMLP
+	bestMLP
