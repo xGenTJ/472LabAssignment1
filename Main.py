@@ -68,23 +68,13 @@ def exportToCSV(fileName, instance_predicted_class, conFusionMatrix, classificat
     cf = pd.DataFrame(conFusionMatrix)
     cr = pd.DataFrame(classificationReport).transpose()
 
-    # result = cf.append(cr, ignore_index=True, sort=False)
-    # print(result)
-    # print(cf.to_string())
-    # print(cr.to_string())
-    # print(re.sub('\s\s*', ',', cf.to_string().strip()))
-    #
-    # print(cr.to_string())
-    # print(re.sub('\s\s*', ',', cr.to_string().strip()))
+    print(cf.to_string())
+    print(cr.to_string())
 
     with open(r'output/'+fileName, 'w') as f:
-        f.write(instance_predicted_class + '\n\n')
-        # f.write(re.sub('\s', ',', cf.to_string().strip()) + '\n\n')
-        # f.write(cr.to_string() + '\n\n')
-        # f.write(cf.to_string() + '\n\n')
-        # f.write(cr.to_string() + '\n\n')
-
-    # cf.to_csv(r'output/'+fileName, sep=',')
+        f.write(instance_predicted_class)
+    cf.to_csv(r'output/'+fileName, sep=',', mode='a')
+    cr.to_csv(r'output/'+fileName, sep=',', mode='a')
 
 def instancePredictedClass(prediction, reverseDic):
 
