@@ -12,6 +12,10 @@ from sklearn import tree
 import graphviz
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+import re
 import os
 
 os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz/bin/'
@@ -59,21 +63,20 @@ def calculateConfusionMatrix(yTest, prediction):
 
 
 def calculateClassificationReport(yTest, prediction):
-    return classification_report(yTest, prediction)
+    return classification_report(yTest, prediction, output_dict=True)
 
 # missing 3a
 def exportToCSV(fileName, instance_predicted_class, conFusionMatrix, classificationReport):
-
-
-    # will need to discuss how to format files
     cf = pd.DataFrame(conFusionMatrix)
+    cr = pd.DataFrame(classificationReport).transpose()
+
+    print(cf.to_string())
+    print(cr.to_string())
 
     with open(r'output/'+fileName, 'w') as f:
-        f.write(instance_predicted_class + '\n\n')
-        f.write(cf.to_string() + '\n\n')
-        f.write(classificationReport + '\n\n')
-
-    # cf.to_csv(r'output/'+fileName, sep=',')
+        f.write(instance_predicted_class)
+    cf.to_csv(r'output/'+fileName, sep=',', mode='a')
+    cr.to_csv(r'output/'+fileName, sep=',', mode='a')
 
 def instancePredictedClass(prediction, reverseDic):
 
@@ -94,10 +97,6 @@ def baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model):
     base_DT = base_DT.fit(xTrain, yTrain)                               # train the algorithm with training datasets
     base_DT_prediction = base_DT.predict(xTest)                         # make predictions on our test dataset
     base_DT_predicted_class = instancePredictedClass(base_DT_prediction, reverseDic)
-    # export DT to pdf using Graphviz (optional)
-    # dot_data = tree.export_graphviz(base_DT, out_file=None)
-    # graph = graphviz.Source(dot_data)
-    # graph.render('Base-DT-DS2')
 
     cfm = calculateConfusionMatrix(yTest, base_DT_prediction)
     cr = calculateClassificationReport(yTest, base_DT_prediction)
@@ -107,6 +106,44 @@ def baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model):
 
     print(base_DT_predicted_class)
     exportToCSV(model, base_DT_predicted_class, cfm, cr)
+
+def betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model):
+    # A better performing Decision Tree found by performing grid search to find the best combination of hyper-parameters.
+    base_DT = tree.DecisionTreeClassifier()          # construct DT classifier with entropy criterion
+    param_grid = {
+        'criterion': ['gini', 'entropy'],
+        'max_depth': [None, 10],
+        'min_samples_split': [2, 3, 4, 5, 6],
+        'min_impurity_decrease': [0.0, 0.5, 1.0, 1.5, 2.0],
+        'class_weight': [None, 'balanced']
+    }
+    search = GridSearchCV(base_DT, param_grid, cv=5)
+    search.fit(xTrain, yTrain)
+
+    print('Best Criterion:', search.best_estimator_.get_params()['criterion'])
+    print('Best max_depth:', search.best_estimator_.get_params()['max_depth'])
+    print('Best min_samples_split:', search.best_estimator_.get_params()['min_samples_split'])
+    print('Best min_impurity_decrease:', search.best_estimator_.get_params()['min_impurity_decrease'])
+    print('Best class_weight:', search.best_estimator_.get_params()['class_weight'])
+
+    # create best_dt from all the best params found in the grid search
+    best_DT = tree.DecisionTreeClassifier(criterion=str(search.best_estimator_.get_params()['criterion']),
+                                          max_depth=search.best_estimator_.get_params()['max_depth'],
+                                          min_samples_split=search.best_estimator_.get_params()['min_samples_split'],
+                                          min_impurity_decrease=search.best_estimator_.get_params()['min_impurity_decrease'],
+                                          class_weight=str(search.best_estimator_.get_params()['class_weight']))
+    best_DT = best_DT.fit(xTrain, yTrain)                                                       # train the algorithm with training datasets
+    best_DT_prediction = best_DT.predict(xTest)                                                 # make predictions
+    best_DT_predicted_class = instancePredictedClass(best_DT_prediction, reverseDic)
+
+    cfm = calculateConfusionMatrix(yTest, best_DT_prediction)
+    cr = calculateClassificationReport(yTest, best_DT_prediction)
+
+    print(best_DT_predicted_class)
+    print(cfm)
+    print(cr)
+
+    exportToCSV(model, best_DT_predicted_class, cfm, cr)
 
 def classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseDic, model):
 
@@ -187,7 +224,7 @@ class Main:
 
     # print(xTest)
 
-    baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-DT-DS2')
+    baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'testing')
 
     # baseMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-MLP-DS2')
     # bestMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-MLP-DS2')
