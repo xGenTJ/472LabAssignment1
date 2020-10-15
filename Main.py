@@ -11,7 +11,9 @@ from sklearn.linear_model import Perceptron
 from sklearn import tree
 import graphviz
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.naive_bayes import GaussianNB
 import os
+
 os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz/bin/'
 
 def readCSV():
@@ -112,13 +114,24 @@ def classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseDic, model):
     clf = clf.fit(xTrain, yTrain)
     clf_prediction = clf.predict(xTest)
 
-    clf_score = clf.score(xTrain, yTrain)
     clf_confusion_matrix = calculateConfusionMatrix(yTest, clf_prediction)
     clf_classification_report = calculateClassificationReport(yTest, clf_prediction)
     clf_predicted_class = instancePredictedClass(clf_prediction, reverseDic)
     print(clf_confusion_matrix)
 
-    exportToCSV(model, instancePredictedClass(clf_prediction), clf_confusion_matrix, clf_classification_report)
+    exportToCSV(model, clf_predicted_class, clf_confusion_matrix, clf_classification_report)
+
+def GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseDic, model):
+    gnb = GaussianNB()
+    gnb = gnb.fit(xTrain, yTrain)
+    gnb_prediction = gnb.predict(xTest)
+
+    gnb_confusion_matrix = calculateConfusionMatrix(yTest, gnb_prediction)
+    gnb_classification_report = calculateClassificationReport(yTest, gnb_prediction)
+    gnb_predicted_class = instancePredictedClass(gnb_prediction, reverseDic)
+    print(gnb_confusion_matrix)
+
+    exportToCSV(model, gnb_predicted_class, gnb_confusion_matrix, gnb_classification_report)
 
 def baseMLP(xTrain, xTest, yTrain, yTest, reverseDic, model):
     # a baseline Multi-Layered Perceptron with 1 hidden layer of 100 neurons, sigmoid/logistic as activation function,
