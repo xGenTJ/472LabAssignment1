@@ -5,10 +5,10 @@ Github: https://github.com/xGenTJ/472LabAssignment1
 COMP 472 -  Artificial Intelligence
 Lab Assignment: 1
 October 19th, 2020
-Students:  Tao Jing:							[Team Leader]
+Students:  Tao Jing:	40041626						[Team Leader]
            Priscilla Cournoyer: 27710690
-		       Naimur Rashid: 
------------------------------------------------------------------------------------------------------------------
+		       Naimur Rashid: 40027867
+--------------------------------
                                           PROJECT SETUP
 -----------------------------------------------------------------------------------------------------------------
 Python 3.0
@@ -28,7 +28,7 @@ EVERYONE:
 	readCSV()
 	plotAlphabet()
 	getReplacedLastColumn()
-	naimursMassage()
+	cleanUpData()
 	exportToCSV()
 	main
 	instancePredictedClass()

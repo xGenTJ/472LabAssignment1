@@ -60,7 +60,7 @@ def getReplacedLastColumn(info, AlphabetData, lastColIndex=1024):
 
     return alphabetLastColumn
 
-def naimursMassage(alphabetData, alphabetLastColumn, lastColIndex=1024):
+def cleanUpData(alphabetData, alphabetLastColumn, lastColIndex=1024):
     X = alphabetData.drop(alphabetData.columns[lastColIndex], axis=1)
     Y = alphabetLastColumn
 
@@ -144,7 +144,7 @@ def betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model
                                           max_depth=search.best_estimator_.get_params()['max_depth'],
                                           min_samples_split=search.best_estimator_.get_params()['min_samples_split'],
                                           min_impurity_decrease=search.best_estimator_.get_params()['min_impurity_decrease'],
-                                          class_weight=str(search.best_estimator_.get_params()['class_weight']))
+                                          class_weight=search.best_estimator_.get_params()['class_weight'])
     best_DT = best_DT.fit(xTrain, yTrain)                                                       # train the algorithm with training datasets
     best_DT_prediction = best_DT.predict(xTest)                                                 # make predictions
     best_DT_predicted_class = instancePredictedClass(best_DT_prediction, reverseDic)
@@ -247,27 +247,27 @@ class Main:
     lastColumnTest = getReplacedLastColumn(info1, alphabetDataTestLabel)
     # plotAlphabet(lastColumn)
 
-    xTrain, yTrain = naimursMassage(alphabetData, lastColumn)
-    xTest, yTest = naimursMassage(alphabetDataTestLabel, lastColumnTest)
+    xTrain, yTrain = cleanUpData(alphabetData, lastColumn)
+    xTest, yTest = cleanUpData(alphabetDataTestLabel, lastColumnTest)
 
     # GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'GNB-DS1')
     # baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'BASE-DT-DS1')
-    betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-DT-DS1')
+    # betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-DT-DS1')
     # classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'PER-DS1')
     # baseMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Base-MLP-DS1')
-    # bestMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-MLP-DS2')
+    # bestMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-MLP-DS1')
 
 
     lastColumn = getReplacedLastColumn(info2, greekAlphabetData)
     lastColumnTest = getReplacedLastColumn(info2, greekAlphabetDataTestLabel)
-    # plotAlphabet(lastColumn)
+    plotAlphabet(lastColumn)
 
-    xTrain, yTrain = naimursMassage(greekAlphabetData, lastColumn)
-    xTest, yTest = naimursMassage(greekAlphabetDataTestLabel, lastColumnTest)
+    xTrain, yTrain = cleanUpData(greekAlphabetData, lastColumn)
+    xTest, yTest = cleanUpData(greekAlphabetDataTestLabel, lastColumnTest)
 
-    # GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'GNB-DS2')
-    # baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'BASE-DT-DS2')
-    # betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-DT-DS2')
-    # classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'PER-DS2')
-    # baseMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-MLP-DS2')
+    GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'GNB-DS2')
+    baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'BASE-DT-DS2')
+    betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-DT-DS2')
+    classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'PER-DS2')
+    baseMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-MLP-DS2')
     # bestMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-MLP-DS2')
