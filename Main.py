@@ -9,6 +9,7 @@ from sklearn import tree
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import precision_recall_fscore_support as score
 import os
 
 
@@ -23,7 +24,10 @@ def readCSV():
     alphabetDataTestLabel = pd.read_csv('dataset/test_with_label_1.csv', header=None)
     greekAlphabetDataTestLabel = pd.read_csv('dataset/test_with_label_2.csv', header=None)
 
-    return info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel, getReverseDic(info1), getReverseDic(info2)
+    alphaValidation = pd.read_csv('dataset/val_1.csv', header=None)
+    greekAlphaValidation = pd.read_csv('dataset/val_1.csv', header=None)
+
+    return info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel, getReverseDic(info1), getReverseDic(info2), alphaValidation, greekAlphaValidation
 
 
 def exportToCSV(fileName, instance_predicted_class, conFusionMatrix, classificationReport):
@@ -98,8 +102,13 @@ def GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseDic, model):
     gnb_predicted_class = instancePredictedClass(gnb_prediction, reverseDic)
     # print(gnb_confusion_matrix)
 
-    exportToCSV(model, gnb_predicted_class, gnb_confusion_matrix, gnb_classification_report)
-
+    # exportToCSV(model, gnb_predicted_class, gnb_confusion_matrix, gnb_classification_report)
+    precision, recall, fscore, support = score(yTest, gnb_prediction, average='macro')
+    # print('Precision : {}'.format(precision))
+    # print('Recall    : {}'.format(recall))
+    # print('F-score   : {}'.format(fscore))
+    # print('Support   : {}'.format(support))
+    return gnb, fscore
 
 # number 2 b)
 def baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model):
@@ -115,9 +124,16 @@ def baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model):
 
     # print(cfm)
     # print(cr)
-    #
+
+    precision, recall, fscore, support = score(yTest, base_DT_prediction, average='macro')
+    # print('Precision : {}'.format(precision))
+    # print('Recall    : {}'.format(recall))
+    # print('F-score   : {}'.format(fscore))
+    # print('Support   : {}'.format(support))
     # print(base_DT_predicted_class)
-    exportToCSV(model, base_DT_predicted_class, cfm, cr)
+    # exportToCSV(model, base_DT_predicted_class, cfm, cr)
+    # return base_DT, best performance measures (accuracy, weight average...)-> however we want to measure this --> F1SCORE
+    return base_DT, fscore
 
 # number 2 c)
 def betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model):
@@ -156,7 +172,13 @@ def betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseDic, model
     # print(cfm)
     # print(cr)
 
-    exportToCSV(model, best_DT_predicted_class, cfm, cr)
+    # exportToCSV(model, best_DT_predicted_class, cfm, cr)
+    precision, recall, fscore, support = score(yTest, best_DT_prediction, average='macro')
+    # print('Precision : {}'.format(precision))
+    # print('Recall    : {}'.format(recall))
+    # print('F-score   : {}'.format(fscore))
+    # print('Support   : {}'.format(support))
+    return best_DT, fscore
 
 # number 2 d)
 def classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseDic, model):
@@ -170,9 +192,14 @@ def classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseDic, model):
     clf_predicted_class = instancePredictedClass(clf_prediction, reverseDic)
     # print(clf_confusion_matrix)
 
-    exportToCSV(model, clf_predicted_class, clf_confusion_matrix, clf_classification_report)
+    # exportToCSV(model, clf_predicted_class, clf_confusion_matrix, clf_classification_report)
 
-
+    precision, recall, fscore, support = score(yTest, clf_prediction, average='macro')
+    # print('Precision : {}'.format(precision))
+    # print('Recall    : {}'.format(recall))
+    # print('F-score   : {}'.format(fscore))
+    # print('Support   : {}'.format(support))
+    return clf, fscore
 # number 2 e)
 def baseMLP(xTrain, xTest, yTrain, yTest, reverseDic, model):
     # a baseline Multi-Layered Perceptron with 1 hidden layer of 100 neurons, sigmoid/logistic as activation function,
@@ -190,8 +217,14 @@ def baseMLP(xTrain, xTest, yTrain, yTest, reverseDic, model):
     # print(cr)
     # print(clf_predicted_class)
 
-    exportToCSV(model, clf_predicted_class, cfm, cr)
+    # exportToCSV(model, clf_predicted_class, cfm, cr)
 
+    precision, recall, fscore, support = score(yTest, base_MLP_prediction, average='macro')
+    # print('Precision : {}'.format(precision))
+    # print('Recall    : {}'.format(recall))
+    # print('F-score   : {}'.format(fscore))
+    # print('Support   : {}'.format(support))
+    return base_MLP, fscore
 
 # number 2 f)
 def bestMLP(xTrain, xTest, yTrain, yTest, reverseDic, model):
@@ -237,37 +270,73 @@ def bestMLP(xTrain, xTest, yTrain, yTest, reverseDic, model):
     # print(cr)
     # print(clf_predicted_class)
 
-    exportToCSV(model, clf_predicted_class, cfm, cr)
+    # exportToCSV(model, clf_predicted_class, cfm, cr)
 
-# main runner class
-class Main:
-    info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel, reverseAlphaDic, reverseGreekDic = readCSV()
+    precision, recall, fscore, support = score(yTest, best_MLP_prediction, average='macro')
+    # print('Precision : {}'.format(precision))
+    # print('Recall    : {}'.format(recall))
+    # print('F-score   : {}'.format(fscore))
+    # print('Support   : {}'.format(support))
+    return clf, fscore
 
+def handleAlpha(info1, alphabetData, alphabetDataTestLabel, reverseAlphaDic, alphaValidation):
     lastColumn = getReplacedLastColumn(info1, alphabetData)
     lastColumnTest = getReplacedLastColumn(info1, alphabetDataTestLabel)
-    # plotAlphabet(lastColumn)
+    plotAlphabet(lastColumn)
 
     xTrain, yTrain = cleanUpData(alphabetData, lastColumn)
     xTest, yTest = cleanUpData(alphabetDataTestLabel, lastColumnTest)
 
-    # GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'GNB-DS1')
-    # baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'BASE-DT-DS1')
-    # betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-DT-DS1')
-    # classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'PER-DS1')
-    # baseMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Base-MLP-DS1')
-    # bestMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-MLP-DS1')
+    GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'GNB-DS1')
+    baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'BASE-DT-DS1')
+    betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-DT-DS1')
+    classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'PER-DS1')
+    baseMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Base-MLP-DS1')
+    bestMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-MLP-DS1')
 
-
+def handleGreekAlpha(info2, greekAlphabetData, greekAlphabetDataTestLabel, reverseGreekDic, greekAlphaValidation):
     lastColumn = getReplacedLastColumn(info2, greekAlphabetData)
     lastColumnTest = getReplacedLastColumn(info2, greekAlphabetDataTestLabel)
-    plotAlphabet(lastColumn)
+    # plotAlphabet(lastColumn)
 
     xTrain, yTrain = cleanUpData(greekAlphabetData, lastColumn)
     xTest, yTest = cleanUpData(greekAlphabetDataTestLabel, lastColumnTest)
 
-    GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'GNB-DS2')
-    baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'BASE-DT-DS2')
-    betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-DT-DS2')
-    classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'PER-DS2')
-    baseMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-MLP-DS2')
-    # bestMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-MLP-DS2')
+    gnb, gnb_fscore = GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'GNB-DS2')
+    base_DT, base_DT_fscore = baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'BASE-DT-DS2')
+    best_DT, best_DT_fscore =betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-DT-DS2')
+    per, per_fscore = classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'PER-DS2')
+    base_MLP, base_MLP_fscore = baseMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-MLP-DS2')
+    best_MLP, best_MLP_fscore = bestMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-MLP-DS2')
+
+    # use  macro avg of f1 score because it takes into account the precision and recall of the model of all classes
+    # put all model + scores into a list ^^
+    # find the one with the best stats/scores
+    # run the validation set on the best model - final result with unseen data -> can graph results for presentation
+
+    listOfAllModels = [gnb, base_DT, best_DT, per, base_MLP, best_MLP]
+    listOfAllScores = [gnb_fscore, base_DT_fscore, best_DT_fscore, per_fscore, base_MLP_fscore, best_MLP_fscore]
+    print('maximum score is: ' + str(max(listOfAllScores)))
+    bestModel = listOfAllModels.get(max(listOfAllScores))
+    print(bestModel)
+    bestModel_prediction = bestModel.predict(greekAlphaValidation)  # make predictions on our test VALIDATION dataset
+    bestModel_predicted_class = instancePredictedClass(bestModel_prediction, reverseGreekDic)
+
+    # cfm = calculateConfusionMatrix(yValidationTest, bestModel_prediction)
+    # cr = calculateClassificationReport(yValidationTest, bestModel_prediction)
+
+    # print(cfm)
+    # print(cr)
+
+
+# main runner class
+class Main:
+    info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel, reverseAlphaDic, reverseGreekDic, alphaValidation, greekAlphaValidation = readCSV()
+
+    # handleAlpha(info1, alphabetData, alphabetDataTestLabel, reverseAlphaDic, alphaValidation)
+    handleGreekAlpha(info2, greekAlphabetData, greekAlphabetDataTestLabel, reverseGreekDic, greekAlphaValidation)
+
+    # use  macro avg of f1 score because it takes into account the precision and recall of the model of all classes
+    # put all model + scores into a list (using mean accuracy of model to determine which model is best)
+    # find the one with the best stats/scores
+    # run the validation set on the best model - final result with unseen data -> can graph results for presentation
