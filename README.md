@@ -16,10 +16,9 @@ scikit-learn
 -----------------------------------------------------------------------------------------------------------------
                                            INSTRUCTIONS
 ---------------------------------------------------------------------------------------------------------------  
-Should contain specific and complete instructions on how to run your experiments.
-
-
-
+To run the classification models for the english alphabet, respectively comment & uncomment lines 242-247 in the Main.py file.
+To run the classification models for the greek alphabet, respectively comment & uncomment lines 257-262 in the Main.py file.
+Output files are in the output folder.
 
 
 -----------------------------------------------------------------------------------------------------------------
@@ -30,21 +29,18 @@ EVERYONE:
 	plotAlphabet()
 	getReplacedLastColumn()
 	naimursMassage()
-	exportToCSV()		- final
+	exportToCSV()
 	main
 	instancePredictedClass()
 	getReversedDic()
 	
 TAO:
 	classifyPerceptron()
-
-
-
+    GaussianNaiveBayes()
 
 PRISCILLA:
 	calculateConfusionMatrix()
 	calculateClassificationReport()
-	exportToCSV()  - initial
 	baselineDecisionTree()
 	betterPerformingDecisionTree()
 
