@@ -25,7 +25,7 @@ def readCSV():
     greekAlphabetDataTestLabel = pd.read_csv('dataset/test_with_label_2.csv', header=None)
 
     alphaValidation = pd.read_csv('dataset/val_1.csv', header=None)
-    greekAlphaValidation = pd.read_csv('dataset/val_1.csv', header=None)
+    greekAlphaValidation = pd.read_csv('dataset/val_2.csv', header=None)
 
     return info1, info2, alphabetData, greekAlphabetData, alphabetDataTestLabel, greekAlphabetDataTestLabel, getReverseDic(info1), getReverseDic(info2), alphaValidation, greekAlphaValidation
 
@@ -34,9 +34,9 @@ def exportToCSV(fileName, instance_predicted_class, conFusionMatrix, classificat
     cf = pd.DataFrame(conFusionMatrix)
     cr = pd.DataFrame(classificationReport).transpose()
 
-    print(instance_predicted_class + "\n")
-    print(cf.to_string() + "\n")
-    print(cr.to_string() + "\n")
+    # print(instance_predicted_class + "\n")
+    # print(cf.to_string() + "\n")
+    # print(cr.to_string() + "\n")
 
     with open(r'output/'+fileName, 'w') as f:
         f.write(instance_predicted_class)
@@ -282,29 +282,52 @@ def bestMLP(xTrain, xTest, yTrain, yTest, reverseDic, model):
 def handleAlpha(info1, alphabetData, alphabetDataTestLabel, reverseAlphaDic, alphaValidation):
     lastColumn = getReplacedLastColumn(info1, alphabetData)
     lastColumnTest = getReplacedLastColumn(info1, alphabetDataTestLabel)
+    lastColumnValidation = getReplacedLastColumn(info1, alphaValidation)
     plotAlphabet(lastColumn)
 
     xTrain, yTrain = cleanUpData(alphabetData, lastColumn)
     xTest, yTest = cleanUpData(alphabetDataTestLabel, lastColumnTest)
+    xVali, yVali = cleanUpData(alphaValidation, lastColumnValidation)
 
-    GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'GNB-DS1')
-    baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'BASE-DT-DS1')
-    betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-DT-DS1')
-    classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'PER-DS1')
-    baseMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Base-MLP-DS1')
-    bestMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-MLP-DS1')
+    gnb, gnb_fscore = GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'GNB-DS1')
+    base_DT, base_DT_fscore = baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'BASE-DT-DS1')
+    best_DT, best_DT_fscore = betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-DT-DS1')
+    per, per_fscore = classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'PER-DS1')
+    base_MLP, base_MLP_fscore = baseMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Base-MLP-DS1')
+    best_MLP, best_MLP_fscore = bestMLP(xTrain, xTest, yTrain, yTest, reverseAlphaDic, 'Best-MLP-DS1')
+
+    listOfAllModels = [gnb, base_DT, best_DT, per, base_MLP, best_MLP]
+    listOfAllScores = [gnb_fscore, base_DT_fscore, best_DT_fscore, per_fscore, base_MLP_fscore, best_MLP_fscore]
+
+    for x in listOfAllScores:
+        print(str(x))
+
+    print('maximum score is: ' + str(max(listOfAllScores)))
+    bestModel = listOfAllModels[listOfAllScores.index(max(listOfAllScores))]
+    print(bestModel)
+
+    bestModel_prediction = bestModel.predict(xVali)  # make predictions on our test VALIDATION dataset
+    bestModel_predicted_class = instancePredictedClass(bestModel_prediction, reverseAlphaDic)
+
+    cfm = calculateConfusionMatrix(yVali, bestModel_prediction)
+    cr = calculateClassificationReport(yVali, bestModel_prediction)
+
+    print(cfm)
+    print(cr)
 
 def handleGreekAlpha(info2, greekAlphabetData, greekAlphabetDataTestLabel, reverseGreekDic, greekAlphaValidation):
     lastColumn = getReplacedLastColumn(info2, greekAlphabetData)
     lastColumnTest = getReplacedLastColumn(info2, greekAlphabetDataTestLabel)
+    lastColumnValidation = getReplacedLastColumn(info2, greekAlphaValidation)
     # plotAlphabet(lastColumn)
 
     xTrain, yTrain = cleanUpData(greekAlphabetData, lastColumn)
     xTest, yTest = cleanUpData(greekAlphabetDataTestLabel, lastColumnTest)
+    xVali, yVali = cleanUpData(greekAlphaValidation, lastColumnValidation)
 
     gnb, gnb_fscore = GaussianNaiveBayes(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'GNB-DS2')
     base_DT, base_DT_fscore = baselineDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'BASE-DT-DS2')
-    best_DT, best_DT_fscore =betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-DT-DS2')
+    best_DT, best_DT_fscore = betterPerformingDecisionTree(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-DT-DS2')
     per, per_fscore = classifyPerceptron(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'PER-DS2')
     base_MLP, base_MLP_fscore = baseMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Base-MLP-DS2')
     best_MLP, best_MLP_fscore = bestMLP(xTrain, xTest, yTrain, yTest, reverseGreekDic, 'Best-MLP-DS2')
@@ -316,17 +339,22 @@ def handleGreekAlpha(info2, greekAlphabetData, greekAlphabetDataTestLabel, rever
 
     listOfAllModels = [gnb, base_DT, best_DT, per, base_MLP, best_MLP]
     listOfAllScores = [gnb_fscore, base_DT_fscore, best_DT_fscore, per_fscore, base_MLP_fscore, best_MLP_fscore]
+
+    for x in listOfAllScores:
+        print(str(x))
+
     print('maximum score is: ' + str(max(listOfAllScores)))
-    bestModel = listOfAllModels.get(max(listOfAllScores))
+    bestModel = listOfAllModels[listOfAllScores.index(max(listOfAllScores))]
     print(bestModel)
-    bestModel_prediction = bestModel.predict(greekAlphaValidation)  # make predictions on our test VALIDATION dataset
+
+    bestModel_prediction = bestModel.predict(xVali)  # make predictions on our test VALIDATION dataset
     bestModel_predicted_class = instancePredictedClass(bestModel_prediction, reverseGreekDic)
 
-    # cfm = calculateConfusionMatrix(yValidationTest, bestModel_prediction)
-    # cr = calculateClassificationReport(yValidationTest, bestModel_prediction)
+    cfm = calculateConfusionMatrix(yVali, bestModel_prediction)
+    cr = calculateClassificationReport(yVali, bestModel_prediction)
 
-    # print(cfm)
-    # print(cr)
+    print(cfm)
+    print(cr)
 
 
 # main runner class
