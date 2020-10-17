@@ -321,7 +321,7 @@ def handleGreekAlpha(info2, greekAlphabetData, greekAlphabetDataTestLabel, rever
     lastColumn = getReplacedLastColumn(info2, greekAlphabetData)
     lastColumnTest = getReplacedLastColumn(info2, greekAlphabetDataTestLabel)
     lastColumnValidation = getReplacedLastColumn(info2, greekAlphaValidation)
-    # plotAlphabet(lastColumn)
+    plotAlphabet(lastColumn)
 
     xTrain, yTrain = cleanUpData(greekAlphabetData, lastColumn)
     xTest, yTest = cleanUpData(greekAlphabetDataTestLabel, lastColumnTest)

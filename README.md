@@ -16,8 +16,8 @@ scikit-learn
 -----------------------------------------------------------------------------------------------------------------
                                            INSTRUCTIONS
 ---------------------------------------------------------------------------------------------------------------  
-To run the classification models for the english alphabet, respectively comment & uncomment lines 242-247 in the Main.py file.
-To run the classification models for the greek alphabet, respectively comment & uncomment lines 257-262 in the Main.py file.
+To run the classification models for the english alphabet, respectively comment & uncomment line 366 in the Main.py file.
+To run the classification models for the greek alphabet, respectively comment & uncomment line 367 in the Main.py file.
 Output files are in the output folder.
 
 
@@ -33,6 +33,9 @@ EVERYONE:
 	main
 	instancePredictedClass()
 	getReversedDic()
+	the oral presentation
+	handleGreekAlpha()
+	handleAlpha()
 	
 TAO:
 	classifyPerceptron()
