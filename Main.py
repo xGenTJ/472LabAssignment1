@@ -13,19 +13,19 @@ from sklearn.metrics import precision_recall_fscore_support as score
 import os
 
 
-#CSV functions
+# CSV functions
 def readCSV():
-    info1 = pd.read_csv('dataset/info_1.csv')
-    info2 = pd.read_csv('dataset/info_2.csv')
+    info1 = pd.read_csv('dataset/covid_training.tsv', sep="\t")
+    info2 = pd.read_csv('dataset/covid_test_public.tsv', sep="\t")
 
-    alphabetData = pd.read_csv('dataset/train_1.csv', header=None)
+    # alphabetData = pd.read_csv('dataset/train_1.csv', header=None)
+    #
+    # alphabetDataTestLabel = pd.read_csv('dataset/test_with_label_1.csv', header=None)
+    #
+    # alphaValidation = pd.read_csv('dataset/val_1.csv', header=None)
+    # greekAlphaValidation = pd.read_csv('dataset/val_2.csv', header=None)
 
-    alphabetDataTestLabel = pd.read_csv('dataset/test_with_label_1.csv', header=None)
-
-    alphaValidation = pd.read_csv('dataset/val_1.csv', header=None)
-    greekAlphaValidation = pd.read_csv('dataset/val_2.csv', header=None)
-
-    return #TODO
+    return info1, info2
 
 
 def exportToCSV(fileName, instance_predicted_class, conFusionMatrix, classificationReport):
@@ -42,11 +42,19 @@ def exportToCSV(fileName, instance_predicted_class, conFusionMatrix, classificat
     cr.to_csv(r'output/'+fileName, sep=',', mode='a')
 
 
-#helper functions
-def plotAlphabet(lastColumn):
-    lastColumn.value_counts().sort_index(ascending=True).plot(kind='bar',
-                                                              rot=0)  # , colors = ['#FF0000', '#FF7F00','#FFFF00', '#00FF00','#0000FF', '#4B0082']
-    plt.show()
+def ExtractOriginalVocabulary(dataFrame):
+    column = dataFrame["text"].to_numpy()
+    original_vocab = Counter()
+    for row in column:  # add the frequency of the words to the list
+        li = list(row.split(" "))
+        for word in li:
+            if word != "":
+                original_vocab[word.lower()] += 1
+    filtered_vocab = {x: count for x, count in original_vocab.items() if count >= 2}
+
+    # print(original_vocab.most_common())
+    print(filtered_vocab.items())
+    return original_vocab, filtered_vocab
 
 def getReverseDic(info):
     info_index = info['index'].tolist()
