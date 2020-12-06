@@ -3,7 +3,6 @@ import pandas as pd
 import re
 import math
 
-
 warnings.filterwarnings('ignore')
 
 
@@ -18,8 +17,6 @@ def readCSV():
 # Returns data frame with only the columns we care about.
 def TrimColumns(dataframe):
     dataframe = dataframe[["q1_label", "text"]]
-    # print(dataframe.shape)
-    # print(dataframe.head())
     return dataframe
 
 
@@ -60,6 +57,7 @@ def GetVocabulary(dataframe, remove_words_appear_once=False):
     return vocabulary
 
 
+# Get a dataframe with frequency of each word per message
 def GetTokenizedDataframe(dataframe, vocabulary):
     word_counts_per_message = {unique_word: [0] * len(dataframe['text']) for unique_word in vocabulary}
 
@@ -90,14 +88,14 @@ def RandomizeDataSet(dataframe):
 # Calculating constants
 def CalculateConstant(dataframe, vocabulary):
     # Isolating_no and yes messages first
-    # print(dataframe.head)
     no_messages = dataframe[dataframe['q1_label'] == 0]
     yes_messages = dataframe[dataframe['q1_label'] == 1]
 
+    # Calculate probability of no and yes classes
     p_no = len(no_messages) / len(dataframe)
     p_yes = len(yes_messages) / len(dataframe)
 
-    # p_no
+    # N_no
     n_words_per_no_message = no_messages['text'].apply(len)
     n_no = n_words_per_no_message.sum()
 
@@ -133,33 +131,7 @@ def CalculateParameters(no_messages, yes_messages, alpha, n_no, n_yes, vocabular
     return parameters_no, parameters_yes
 
 
-# Classify a message q1_label
-def classify(message, p_no, p_yes, parameters_no, parameters_yes):
-    message = re.sub('\W', ' ', message)
-    message = message.lower().split()
-
-    p_no_given_message = math.log(p_no)
-    p_yes_given_message = math.log(p_yes)
-
-    for word in message:
-        if word in parameters_no:
-            p_no_given_message += math.log(parameters_no[word])
-
-        if word in parameters_yes:
-            p_yes_given_message += math.log(parameters_yes[word])
-
-    print('P(No|message):', p_no_given_message)
-    print('P(Yes|message):', p_yes_given_message)
-
-    if p_yes_given_message > p_no_given_message:
-        print('Label: Yes')
-    elif p_yes_given_message < p_no_given_message:
-        print('Label: No')
-    else:
-        print('Unknown equal probabilities')
-
-
-def classify_test_set(message, p_no, p_yes, parameters_no, parameters_yes):
+def predict(message, p_no, p_yes, parameters_no, parameters_yes):
     message = re.sub('\W', ' ', message)
     message = message.lower().split()
 
@@ -207,8 +179,12 @@ class Main:
     parameters_no, parameters_yes = CalculateParameters(no_messages, yes_messages, alpha, n_no, n_yes, vocabulary,
                                                         n_vocabulary)
 
-    test_csv['predicted'] = test_csv[test_csv.columns[1]].apply(classify_test_set,
+    test_csv['predicted'] = test_csv[test_csv.columns[1]].apply(predict,
                                                                 args=(p_no, p_yes, parameters_no, parameters_yes))
+
+    average_no = len(test_csv[test_csv['q1_label'] == "no"]) / len(test_csv[test_csv['predicted'] == "no"])
+    print("Accuracy for no ", average_no)
     average_yes = len(test_csv[test_csv['q1_label'] == "yes"]) / len(test_csv[test_csv['predicted'] == "yes"])
-    print(average_yes)
+    print("Accuracy for yes ", average_yes)
+
     print(test_csv[['text', 'q1_label', 'predicted']].head(100))
