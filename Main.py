@@ -182,9 +182,9 @@ class Main:
     test_csv['predicted'] = test_csv[test_csv.columns[1]].apply(predict,
                                                                 args=(p_no, p_yes, parameters_no, parameters_yes))
 
-    average_no = len(test_csv[test_csv['q1_label'] == "no"]) / len(test_csv[test_csv['predicted'] == "no"])
+    average_no = len(test_csv[test_csv['predicted'] == "no"]) / len(test_csv[test_csv['q1_label'] == "no"])
     print("Accuracy for no ", average_no)
-    average_yes = len(test_csv[test_csv['q1_label'] == "yes"]) / len(test_csv[test_csv['predicted'] == "yes"])
+    average_yes = len(test_csv[test_csv['predicted'] == "yes"]) / len(test_csv[test_csv['q1_label'] == "yes"])
     print("Accuracy for yes ", average_yes)
 
     print(test_csv[['text', 'q1_label', 'predicted']].head(100))
