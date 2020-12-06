@@ -1,6 +1,8 @@
 import warnings
 import pandas as pd
 import re
+import math
+
 
 warnings.filterwarnings('ignore')
 
@@ -136,15 +138,15 @@ def classify(message, p_no, p_yes, parameters_no, parameters_yes):
     message = re.sub('\W', ' ', message)
     message = message.lower().split()
 
-    p_no_given_message = p_no
-    p_yes_given_message = p_yes
+    p_no_given_message = math.log(p_no)
+    p_yes_given_message = math.log(p_yes)
 
     for word in message:
         if word in parameters_no:
-            p_no_given_message *= parameters_no[word]
+            p_no_given_message += math.log(parameters_no[word])
 
         if word in parameters_yes:
-            p_yes_given_message *= parameters_yes[word]
+            p_yes_given_message += math.log(parameters_yes[word])
 
     print('P(No|message):', p_no_given_message)
     print('P(Yes|message):', p_yes_given_message)
