@@ -3,6 +3,8 @@ import pandas as pd
 import re
 import math
 
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
 warnings.filterwarnings('ignore')
 
 
@@ -153,6 +155,21 @@ def predict(message, p_no, p_yes, parameters_no, parameters_yes):
         return 'unknown'
 
 
+# Gets evaluation metrics
+def Evaluate(labels, predicted_labels):
+    accuracy = accuracy_score(labels, predicted_labels)
+    print('Accuracy: %f' % accuracy)
+    # precision tp / (tp + fp)
+    precision = precision_score(labels, predicted_labels, pos_label="yes")
+    print('Precision: %f' % precision)
+    # recall: tp / (tp + fn)
+    recall = recall_score(labels, predicted_labels, pos_label="yes")
+    print('Recall: %f' % recall)
+    # f1: 2 tp / (2 tp + fp + fn)
+    f1 = f1_score(labels, predicted_labels, pos_label="yes")
+    print('F1 score: %f' % f1)
+
+
 # main runner class
 class Main:
     # pd.set_option('display.max_colwidth', -1)
@@ -170,7 +187,7 @@ class Main:
 
     # training_set, test_set = RandomizeDataSet(training_dataframe)
 
-    vocabulary = GetVocabulary(training_dataframe, True)
+    vocabulary = GetVocabulary(training_dataframe)
     word_counts_per_message = GetTokenizedDataframe(training_dataframe, vocabulary)
     training_dataframe = pd.concat([training_dataframe, word_counts_per_message], axis=1)
     no_messages, yes_messages, p_no, p_yes, n_no, n_yes, n_vocabulary, alpha = CalculateConstant(training_dataframe,
@@ -182,9 +199,6 @@ class Main:
     test_csv['predicted'] = test_csv[test_csv.columns[1]].apply(predict,
                                                                 args=(p_no, p_yes, parameters_no, parameters_yes))
 
-    average_no = len(test_csv[test_csv['predicted'] == "no"]) / len(test_csv[test_csv['q1_label'] == "no"])
-    print("Accuracy for no ", average_no)
-    average_yes = len(test_csv[test_csv['predicted'] == "yes"]) / len(test_csv[test_csv['q1_label'] == "yes"])
-    print("Accuracy for yes ", average_yes)
+    Evaluate(test_csv['q1_label'], test_csv['predicted'])
 
     print(test_csv[['text', 'q1_label', 'predicted']].head(100))
