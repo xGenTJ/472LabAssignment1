@@ -170,6 +170,15 @@ def Evaluate(labels, predicted_labels):
     print('F1 score: %f' % f1)
 
 
+def writeEvaluatioNFile(filename, accuracy, yes_precision, no_precision, yes_recall, no_recall, yes_f1, no_f1):
+
+    with open(filename, 'w') as f:
+        f.write(accuracy, '\r\n')
+        f.write(yes_precision, ' ', no_precision, '\r\n')
+        f.write(yes_recall, ' ', no_recall, '\r\n')
+        f.write(yes_f1, ' ', no_f1, '\r\n')
+        f.close()
+
 # main runner class
 class Main:
     # pd.set_option('display.max_colwidth', -1)
