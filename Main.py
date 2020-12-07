@@ -48,8 +48,8 @@ def GetVocabulary(dataframe, remove_words_appear_once=False):
     dataframe['text'] = dataframe['text'].str.split()
 
     vocabulary = []
-    for sms in dataframe['text']:
-        for word in sms:
+    for tweet in dataframe['text']:
+        for word in tweet:
             vocabulary.append(word)
     if remove_words_appear_once:
         vocabulary = [x for x in vocabulary if vocabulary.count(x) > 1]
@@ -63,8 +63,8 @@ def GetVocabulary(dataframe, remove_words_appear_once=False):
 def GetTokenizedDataframe(dataframe, vocabulary):
     word_counts_per_message = {unique_word: [0] * len(dataframe['text']) for unique_word in vocabulary}
 
-    for index, sms in enumerate(dataframe['text']):
-        for word in sms:
+    for index, tweet in enumerate(dataframe['text']):
+        for word in tweet:
             if word in vocabulary:
                 word_counts_per_message[word][index] += 1
 
