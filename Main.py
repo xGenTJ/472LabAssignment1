@@ -3,7 +3,8 @@ import pandas as pd
 import re
 import math
 
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, \
+    classification_report
 
 warnings.filterwarnings('ignore')
 
@@ -170,13 +171,14 @@ def Evaluate(labels, predicted_labels):
     print('F1 score: %f' % f1)
 
 
-def writeEvaluatioNFile(filename, accuracy, yes_precision, no_precision, yes_recall, no_recall, yes_f1, no_f1):
+def writeEvaluationFile(filename, clr):
+    print(clr)
 
-    with open(filename, 'w') as f:
-        f.write(accuracy, '\r\n')
-        f.write(yes_precision, ' ', no_precision, '\r\n')
-        f.write(yes_recall, ' ', no_recall, '\r\n')
-        f.write(yes_f1, ' ', no_f1, '\r\n')
+    with open(r'output/' + filename, 'w') as f:
+        f.write(str(round(clr['accuracy'], 4)) + '\r')
+        f.write(str(round(clr['Yes']['precision'], 4)) + '  ' + str(round(clr['No']['precision'], 4)) + '\r')
+        f.write(str(round(clr['Yes']['recall'], 4)) + '  ' + str(round(clr['No']['recall'], 4)) + '\r')
+        f.write(str(round(clr['Yes']['f1-score'], 4)) + '  ' + str(round(clr['No']['f1-score'], 4)) + '\r')
         f.close()
 
 # main runner class
@@ -196,7 +198,7 @@ class Main:
 
     # training_set, test_set = RandomizeDataSet(training_dataframe)
 
-    vocabulary = GetVocabulary(training_dataframe)
+    vocabulary = GetVocabulary(training_dataframe, remove_words_appear_once=True)
     word_counts_per_message = GetTokenizedDataframe(training_dataframe, vocabulary)
     training_dataframe = pd.concat([training_dataframe, word_counts_per_message], axis=1)
     no_messages, yes_messages, p_no, p_yes, n_no, n_yes, n_vocabulary, alpha = CalculateConstant(training_dataframe,
@@ -211,3 +213,8 @@ class Main:
     Evaluate(test_csv['q1_label'], test_csv['predicted'])
 
     print(test_csv[['text', 'q1_label', 'predicted']].head(100))
+    clr = classification_report(test_csv['q1_label'], test_csv['predicted'], target_names=['No', 'Yes'], output_dict= True)
+    writeEvaluationFile('eval_NB-BOW-FV.txt', clr)
+
+
+
