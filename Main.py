@@ -134,7 +134,7 @@ def CalculateParameters(no_messages, yes_messages, alpha, n_no, n_yes, vocabular
     return parameters_no, parameters_yes
 
 
-def predict(message, p_no, p_yes, parameters_no, parameters_yes):
+def predict(message, p_no, p_yes, parameters_no, parameters_yes, returnScore = False):
     message = re.sub('\W', ' ', message)
     message = message.lower().split()
 
@@ -149,9 +149,17 @@ def predict(message, p_no, p_yes, parameters_no, parameters_yes):
             p_yes_given_message += math.log(parameters_yes[word])
 
     if p_yes_given_message > p_no_given_message:
-        return 'yes'
+
+        if returnScore:
+            return p_yes_given_message
+        else:
+            return 'yes'
     elif p_no_given_message > p_yes_given_message:
-        return 'no'
+
+        if returnScore:
+            return p_no_given_message
+        else:
+            return 'no'
     else:
         return 'unknown'
 
@@ -172,13 +180,22 @@ def Evaluate(labels, predicted_labels):
 
 
 def writeEvaluationFile(filename, clr):
-    print(clr)
 
     with open(r'output/' + filename, 'w') as f:
         f.write(str(round(clr['accuracy'], 4)) + '\r')
         f.write(str(round(clr['Yes']['precision'], 4)) + '  ' + str(round(clr['No']['precision'], 4)) + '\r')
         f.write(str(round(clr['Yes']['recall'], 4)) + '  ' + str(round(clr['No']['recall'], 4)) + '\r')
         f.write(str(round(clr['Yes']['f1-score'], 4)) + '  ' + str(round(clr['No']['f1-score'], 4)) + '\r')
+        f.close()
+
+def writeTraceFile(filename, test_csv):
+
+    with open(r'output/' + filename, 'w') as f:
+
+        for x in range(len(test_csv)):
+            # f.write(str(test_csv['tweet_id'][x]))
+            f.write(str(test_csv['tweet_id'][x]) + '  ' + str(test_csv['predicted'][x]) + '  ' + "{:e}".format(float(test_csv['score'][x])) + '  ' + str(test_csv['q1_label'][x]) + '  ' + str(test_csv['correct'][x]) + '\r')
+
         f.close()
 
 # main runner class
@@ -198,7 +215,7 @@ class Main:
 
     # training_set, test_set = RandomizeDataSet(training_dataframe)
 
-    vocabulary = GetVocabulary(training_dataframe, remove_words_appear_once=True)
+    vocabulary = GetVocabulary(training_dataframe, remove_words_appear_once=False)
     word_counts_per_message = GetTokenizedDataframe(training_dataframe, vocabulary)
     training_dataframe = pd.concat([training_dataframe, word_counts_per_message], axis=1)
     no_messages, yes_messages, p_no, p_yes, n_no, n_yes, n_vocabulary, alpha = CalculateConstant(training_dataframe,
@@ -210,11 +227,26 @@ class Main:
     test_csv['predicted'] = test_csv[test_csv.columns[1]].apply(predict,
                                                                 args=(p_no, p_yes, parameters_no, parameters_yes))
 
+    test_csv['score'] = test_csv[test_csv.columns[1]].apply(predict,
+                                                                args=(p_no, p_yes, parameters_no, parameters_yes, True))
+
+    correctList = []
+
+    for x in range(len(test_csv)):
+        if test_csv['predicted'][x] == test_csv['q1_label'][x]:
+            correctList.append('correct')
+        else:
+            correctList.append('wrong')
+
+    test_csv['correct'] = correctList
+
     Evaluate(test_csv['q1_label'], test_csv['predicted'])
 
-    print(test_csv[['text', 'q1_label', 'predicted']].head(100))
-    clr = classification_report(test_csv['q1_label'], test_csv['predicted'], target_names=['No', 'Yes'], output_dict= True)
-    writeEvaluationFile('eval_NB-BOW-FV.txt', clr)
+    print(test_csv[['tweet_id', 'predicted', 'score', 'q1_label', 'correct']].head(100))
 
+    clr = classification_report(test_csv['q1_label'], test_csv['predicted'], target_names=['No', 'Yes'], output_dict= True)
+
+    writeEvaluationFile('eval_NB-BOW-OV.txt', clr)
+    writeTraceFile('trace_NB-BOW-OV.txt', test_csv)
 
 
